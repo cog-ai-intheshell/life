@@ -582,7 +582,7 @@
       }
     </style>
   </head>
-  <body data-theme="light">
+  <body data-theme="dark">
     <div class="app-shell">
       <aside class="sidebar" aria-label="Control panel">
         <div class="sidebar-inner">
@@ -642,7 +642,7 @@
           <header class="sim-header">
             <div class="header-actions">
               <button id="pauseButton" class="header-button" type="button" aria-pressed="false">Pause</button>
-              <button id="themeToggle" class="header-button" type="button" aria-label="Enable dark mode" aria-pressed="false" title="Enable dark mode">☾</button>
+              <button id="themeToggle" class="header-button" type="button" aria-label="Enable light mode" aria-pressed="true" title="Enable light mode">☀</button>
             </div>
             <h2>Evolution Arena</h2>
             <p id="timeTitle">tick 0 · click inside the arena to add an agent</p>
@@ -1206,7 +1206,7 @@
       controls.themeToggle.addEventListener("click", toggleTheme);
 
       readControls();
-      applyTheme(localStorage.getItem("life-playground-theme") || "light");
+      applyTheme(localStorage.getItem("life-playground-theme") || "dark");
     </script>
   </body>
 </html>
