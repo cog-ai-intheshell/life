@@ -1,0 +1,1212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Life Ecosystem Playground</title>
+    <style>
+      :root {
+        --bottom-height: clamp(150px, 18vh, 205px);
+        color-scheme: light;
+        --blue: #1677e8;
+        --blue-dark: #0f5fbd;
+        --green: #27AE60;
+        --red: #EB5757;
+        --orange: #e87511;
+        --ink: #111827;
+        --text: #111827;
+        --muted: #4b5563;
+        --line: #dfe5ee;
+        --panel: #ffffff;
+        --page: #f6f8fb;
+        --sidebar: #fbfcfe;
+        --field-bg: #ffffff;
+        --field-border: #ccd6e1;
+        --control-bg: #ffffff;
+        --control-bg-hover: #f4f8ff;
+        --control-text: #0f5fbd;
+        --subtle-line: #edf1f6;
+        --primary-button-text: #ffffff;
+        --primary-gradient: linear-gradient(180deg, #1a83f5 0%, #0f72df 100%);
+        --primary-gradient-hover: linear-gradient(180deg, #2490ff 0%, #1069ce 100%);
+        --primary-shadow: 0 7px 16px rgba(22, 119, 232, 0.22);
+        --card-shadow: 0 3px 16px rgba(17, 24, 39, 0.04);
+        --scene-bg: #ffffff;
+        --canvas-bg: #ffffff;
+        --canvas-grid: #d8dee8;
+        --canvas-axis: #8b96a8;
+        --canvas-food: #27AE60;
+        --canvas-agent: #e87511;
+        --canvas-agent-soft: rgba(232, 117, 17, 0.22);
+        --canvas-predator: #1677e8;
+        --canvas-danger: rgba(235, 87, 87, 0.22);
+        --canvas-debug: rgba(17, 24, 39, 0.62);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      body[data-theme="dark"] {
+        color-scheme: dark;
+        --bg1: #191919;
+        --bg2: #222222;
+        --primary: #5D71FC;
+        --blue: #5D71FC;
+        --blue-dark: #5D71FC;
+        --page: var(--bg1);
+        --panel: var(--bg2);
+        --sidebar: var(--bg2);
+        --scene-bg: var(--bg1);
+        --canvas-bg: var(--bg1);
+        --ink: #f8f8f8;
+        --text: #f8f8f8;
+        --muted: rgba(248, 248, 248, 0.62);
+        --line: transparent;
+        --subtle-line: transparent;
+        --field-border: transparent;
+        --field-bg: var(--bg1);
+        --control-bg: var(--bg1);
+        --control-bg-hover: var(--bg2);
+        --control-text: var(--primary);
+        --primary-button-text: #f8f8f8;
+        --primary-gradient: linear-gradient(180deg, var(--primary) 0%, var(--primary) 100%);
+        --primary-gradient-hover: linear-gradient(180deg, var(--primary) 0%, var(--primary) 100%);
+        --primary-shadow: none;
+        --card-shadow: none;
+        --canvas-grid: rgba(248, 248, 248, 0.08);
+        --canvas-axis: rgba(248, 248, 248, 0.42);
+        --canvas-food: #27AE60;
+        --canvas-agent: #f89540;
+        --canvas-agent-soft: rgba(248, 149, 64, 0.22);
+        --canvas-predator: #5D71FC;
+        --canvas-danger: rgba(235, 87, 87, 0.24);
+        --canvas-debug: rgba(248, 248, 248, 0.7);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        color: var(--text);
+        background: var(--page);
+      }
+
+      body,
+      button,
+      input {
+        font: inherit;
+      }
+
+      button,
+      input[type="range"] {
+        cursor: pointer;
+      }
+
+      .app-shell {
+        display: grid;
+        grid-template-columns: clamp(286px, 19vw, 380px) minmax(0, 1fr);
+        width: 100vw;
+        height: 100vh;
+        min-height: 620px;
+      }
+
+      .sidebar {
+        min-width: 0;
+        height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: var(--sidebar);
+        border-right: 1px solid var(--line);
+      }
+
+      .sidebar-inner {
+        padding: 18px 18px 22px;
+      }
+
+      .brand {
+        padding: 0 0 14px;
+      }
+
+      .brand h1 {
+        margin: 0 0 4px;
+        font-size: 24px;
+        line-height: 1.15;
+        font-weight: 800;
+      }
+
+      .brand p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.25;
+      }
+
+      .control-section,
+      .info-card {
+        padding: 15px 0 12px;
+        border-top: 1px solid var(--line);
+      }
+
+      .control-section h2,
+      .info-card h2,
+      .data-card h2 {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.1;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+
+      .slider-field,
+      .toggle-field {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px 10px;
+        width: 100%;
+        margin-top: 15px;
+        font-size: 13px;
+      }
+
+      .slider-field output {
+        min-width: 54px;
+        text-align: right;
+        color: var(--text);
+      }
+
+      .slider-field input {
+        grid-column: 1 / -1;
+        width: 100%;
+        margin: 0;
+      }
+
+      input[type="range"] {
+        --range-progress: 50%;
+        --slider-fill: var(--blue);
+        --slider-track: #191919;
+        appearance: none;
+        height: 22px;
+        background: transparent;
+        accent-color: var(--slider-fill);
+      }
+
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 6px;
+        border-radius: 8px;
+        background: linear-gradient(90deg, var(--slider-fill) 0%, var(--slider-fill) var(--range-progress), var(--slider-track) var(--range-progress), var(--slider-track) 100%);
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        margin-top: -5px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--slider-fill);
+      }
+
+      input[type="range"]::-moz-range-track {
+        height: 6px;
+        border-radius: 8px;
+        background: var(--slider-track);
+      }
+
+      input[type="range"]::-moz-range-progress {
+        height: 6px;
+        border-radius: 8px;
+        background: var(--slider-fill);
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--slider-fill);
+      }
+
+      .toggle-field {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 34px;
+        padding: 0 2px;
+      }
+
+      .toggle-field input {
+        width: 34px;
+        height: 18px;
+        margin: 0;
+        appearance: none;
+        position: relative;
+        flex: 0 0 auto;
+        background: var(--control-bg);
+        border: 1px solid var(--field-border);
+        border-radius: 8px;
+      }
+
+      .toggle-field input::before {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 12px;
+        height: 12px;
+        border-radius: 8px;
+        background: var(--muted);
+        transition: transform 120ms ease, background 120ms ease;
+      }
+
+      .toggle-field input:checked {
+        background: var(--blue);
+      }
+
+      .toggle-field input:checked::before {
+        transform: translateX(16px);
+        background: var(--primary-button-text);
+      }
+
+      .primary-button,
+      .secondary-button {
+        width: 100%;
+        height: 44px;
+        border-radius: 8px;
+        font-weight: 700;
+      }
+
+      .primary-button {
+        margin: 12px 0 10px;
+        border: 0;
+        color: var(--primary-button-text);
+        background: var(--primary-gradient);
+        font-size: 16px;
+        box-shadow: var(--primary-shadow);
+      }
+
+      .secondary-button {
+        margin: 0 0 16px;
+        border: 1px solid var(--field-border);
+        color: var(--control-text);
+        background: var(--control-bg);
+        font-size: 14px;
+      }
+
+      .primary-button:hover {
+        background: var(--primary-gradient-hover);
+      }
+
+      .secondary-button:hover {
+        background: var(--control-bg-hover);
+      }
+
+      .info-card p {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .workspace {
+        min-width: 0;
+        height: 100vh;
+        padding: 18px;
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: minmax(0, 1fr) var(--bottom-height);
+        gap: 18px;
+      }
+
+      .simulation-card,
+      .data-card {
+        overflow: hidden;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: var(--card-shadow);
+      }
+
+      .simulation-card {
+        min-height: 0;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+
+      .sim-header {
+        min-height: 68px;
+        padding: 14px 16px 12px;
+        border-bottom: 1px solid var(--subtle-line);
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        float: right;
+      }
+
+      .header-button {
+        min-width: 42px;
+        height: 36px;
+        padding: 0 12px;
+        border: 1px solid var(--field-border);
+        border-radius: 8px;
+        color: var(--control-text);
+        background: var(--control-bg);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .header-button:hover {
+        background: var(--control-bg-hover);
+      }
+
+      .sim-header h2 {
+        margin: 0 0 4px;
+        font-size: 20px;
+        line-height: 1.15;
+      }
+
+      .sim-header p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .scene-frame {
+        position: relative;
+        min-height: 0;
+        background: var(--scene-bg);
+      }
+
+      #sceneMount,
+      #sceneMount canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      .canvas-overlay {
+        position: absolute;
+        left: 16px;
+        bottom: 16px;
+        display: flex;
+        gap: 8px;
+        pointer-events: none;
+      }
+
+      .chip {
+        padding: 7px 10px;
+        border-radius: 8px;
+        color: var(--text);
+        background: color-mix(in srgb, var(--panel) 88%, transparent);
+        border: 1px solid var(--line);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .bottom-grid {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+
+      .data-card {
+        padding: 14px 16px;
+      }
+
+      .metrics-card {
+        min-height: 0;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+        min-height: 0;
+        overflow-y: auto;
+        padding-right: 6px;
+      }
+
+      .metrics-grid::-webkit-scrollbar,
+      .sidebar::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .metrics-grid::-webkit-scrollbar-thumb,
+      .sidebar::-webkit-scrollbar-thumb {
+        background: var(--field-border);
+        border-radius: 8px;
+      }
+
+      .metrics-grid::-webkit-scrollbar-track,
+      .sidebar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .metric {
+        min-width: 0;
+        padding: 11px 12px;
+        border-radius: 8px;
+        background: var(--field-bg);
+        border: 1px solid var(--subtle-line);
+      }
+
+      .metric span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 4px;
+        font-size: 18px;
+        line-height: 1.15;
+      }
+
+      .legend-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 13px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .swatch {
+        width: 11px;
+        height: 11px;
+        border-radius: 8px;
+        flex: 0 0 auto;
+      }
+
+      .agent { background: var(--canvas-agent); }
+      .food { background: var(--canvas-food); }
+      .predator { background: var(--canvas-predator); }
+      .danger { background: var(--canvas-danger); }
+
+      .population-card {
+        min-height: 0;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        gap: 10px;
+      }
+
+      .population-chart {
+        display: block;
+        width: 100%;
+        min-height: 88px;
+        height: 100%;
+        border: 1px solid var(--subtle-line);
+        border-radius: 8px;
+        background: var(--field-bg);
+      }
+
+      .curve-legend {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .curve-legend .legend-row {
+        margin-top: 0;
+        font-size: 12px;
+      }
+
+      body[data-theme="dark"] .sidebar,
+      body[data-theme="dark"] .simulation-card,
+      body[data-theme="dark"] .data-card,
+      body[data-theme="dark"] .header-button {
+        border: 0;
+        background: var(--panel);
+        box-shadow: none;
+      }
+
+      body[data-theme="dark"] .secondary-button {
+        border: 0;
+        background: var(--control-bg);
+        box-shadow: none;
+      }
+
+      body[data-theme="dark"] .control-section,
+      body[data-theme="dark"] .info-card,
+      body[data-theme="dark"] .sim-header,
+      body[data-theme="dark"] .metric,
+      body[data-theme="dark"] .population-chart {
+        border-color: transparent;
+      }
+
+      body[data-theme="dark"] .header-button:hover,
+      body[data-theme="dark"] .secondary-button:hover {
+        color: var(--text);
+        background: var(--control-bg-hover);
+      }
+
+      @media (max-width: 900px) {
+        html,
+        body {
+          overflow: auto;
+        }
+
+        .app-shell {
+          grid-template-columns: 1fr;
+          height: auto;
+          min-height: 100vh;
+        }
+
+        .sidebar {
+          height: auto;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .workspace {
+          height: auto;
+          min-height: 760px;
+          grid-template-rows: minmax(520px, 66vh) auto;
+        }
+
+        .bottom-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Control panel">
+        <div class="sidebar-inner">
+          <header class="brand">
+            <h1>Life Ecosystem Playground</h1>
+            <p>Agents evolve between food and predators</p>
+          </header>
+
+          <section class="control-section">
+            <h2>ECOSYSTEM</h2>
+            <label class="slider-field" for="vehicleCount">
+              <span>Initial agents</span>
+              <output id="vehicleCountValue">25</output>
+              <input id="vehicleCount" type="range" min="5" max="120" step="5" value="25">
+            </label>
+            <label class="slider-field" for="foodCount">
+              <span>Food points</span>
+              <output id="foodCountValue">45</output>
+              <input id="foodCount" type="range" min="5" max="160" step="5" value="45">
+            </label>
+            <label class="slider-field" for="predatorCount">
+              <span>Predators</span>
+              <output id="predatorCountValue">6</output>
+              <input id="predatorCount" type="range" min="0" max="20" step="1" value="6">
+            </label>
+            <label class="slider-field" for="simSpeed">
+              <span>Simulation speed</span>
+              <output id="simSpeedValue">1x</output>
+              <input id="simSpeed" type="range" min="1" max="4" step="1" value="1">
+            </label>
+          </section>
+
+          <section class="control-section">
+            <h2>VISUALS</h2>
+            <label class="toggle-field" for="debugToggle">
+              <span>Show DNA perception</span>
+              <input id="debugToggle" type="checkbox" checked>
+            </label>
+            <label class="toggle-field" for="trailToggle">
+              <span>Show agent trails</span>
+              <input id="trailToggle" type="checkbox">
+            </label>
+          </section>
+
+          <button id="resetButton" class="primary-button" type="button">Reset ecosystem</button>
+          <button id="addFoodButton" class="secondary-button" type="button">Add random food</button>
+
+          <section class="info-card">
+            <h2>HOW IT WORKS</h2>
+            <p>Orange agents seek food, avoid blue predators, lose health over time, and reproduce with slightly mutated DNA. Click the arena to add an agent.</p>
+          </section>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <section class="simulation-card">
+          <header class="sim-header">
+            <div class="header-actions">
+              <button id="pauseButton" class="header-button" type="button" aria-pressed="false">Pause</button>
+              <button id="themeToggle" class="header-button" type="button" aria-label="Enable dark mode" aria-pressed="false" title="Enable dark mode">☾</button>
+            </div>
+            <h2>Evolution Arena</h2>
+            <p id="timeTitle">tick 0 · click inside the arena to add an agent</p>
+          </header>
+          <div class="scene-frame">
+            <div id="sceneMount" aria-label="Life ecosystem simulation"></div>
+            <div class="canvas-overlay" aria-hidden="true">
+              <span class="chip">Food seeking</span>
+              <span class="chip">Predator avoidance</span>
+              <span class="chip">DNA mutation</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="bottom-grid">
+          <article class="data-card metrics-card">
+            <h2>METRICS</h2>
+            <div class="metrics-grid">
+              <div class="metric"><span>Agents</span><strong id="agentMetric">0</strong></div>
+              <div class="metric"><span>Food</span><strong id="foodMetric">0</strong></div>
+              <div class="metric"><span>Predators</span><strong id="predatorMetric">0</strong></div>
+              <div class="metric"><span>Average health</span><strong id="healthMetric">0%</strong></div>
+              <div class="metric"><span>Births</span><strong id="birthMetric">0</strong></div>
+              <div class="metric"><span>Deaths</span><strong id="deathMetric">0</strong></div>
+              <div class="metric"><span>Starvation deaths</span><strong id="starvationMetric">0</strong></div>
+              <div class="metric"><span>Predator deaths</span><strong id="predatorDeathMetric">0</strong></div>
+            </div>
+          </article>
+
+          <article class="data-card population-card">
+            <h2>POPULATION CURVE</h2>
+            <canvas id="populationChart" class="population-chart" aria-label="Agents, food, and predators over time"></canvas>
+            <div class="curve-legend">
+              <div class="legend-row"><i class="swatch agent"></i><span>Agents</span></div>
+              <div class="legend-row"><i class="swatch food"></i><span>Food</span></div>
+              <div class="legend-row"><i class="swatch predator"></i><span>Predators</span></div>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.8/p5.js"></script>
+    <script>
+      var popu;
+      var debug = true;
+      var showTrails = false;
+      var paused = false;
+      var tick = 0;
+      var births = 0;
+      var deaths = 0;
+      var starvationDeaths = 0;
+      var predatorDeaths = 0;
+      var populationHistory = [];
+      var lastHistoryTick = -Infinity;
+      var sceneCanvas;
+
+      var controls = {
+        vehicleCount: document.getElementById("vehicleCount"),
+        foodCount: document.getElementById("foodCount"),
+        predatorCount: document.getElementById("predatorCount"),
+        simSpeed: document.getElementById("simSpeed"),
+        debugToggle: document.getElementById("debugToggle"),
+        trailToggle: document.getElementById("trailToggle"),
+        resetButton: document.getElementById("resetButton"),
+        addFoodButton: document.getElementById("addFoodButton"),
+        pauseButton: document.getElementById("pauseButton"),
+        themeToggle: document.getElementById("themeToggle"),
+        timeTitle: document.getElementById("timeTitle"),
+        agentMetric: document.getElementById("agentMetric"),
+        foodMetric: document.getElementById("foodMetric"),
+        predatorMetric: document.getElementById("predatorMetric"),
+        healthMetric: document.getElementById("healthMetric"),
+        birthMetric: document.getElementById("birthMetric"),
+        deathMetric: document.getElementById("deathMetric"),
+        starvationMetric: document.getElementById("starvationMetric"),
+        predatorDeathMetric: document.getElementById("predatorDeathMetric"),
+        populationChart: document.getElementById("populationChart"),
+      };
+
+      function cssVar(name, fallback) {
+        return getComputedStyle(document.body).getPropertyValue(name).trim() || fallback;
+      }
+
+      function colorToRgba(value, alpha) {
+        if (value.indexOf("#") === 0) {
+          var hex = value.slice(1);
+          if (hex.length === 3) hex = hex.split("").map(function(item) { return item + item; }).join("");
+          var intValue = parseInt(hex, 16);
+          var red = (intValue >> 16) & 255;
+          var green = (intValue >> 8) & 255;
+          var blue = intValue & 255;
+          return "rgba(" + red + ", " + green + ", " + blue + ", " + alpha + ")";
+        }
+        return value;
+      }
+
+      function updateRangeFill(input) {
+        var min = Number(input.min || 0);
+        var max = Number(input.max || 100);
+        var value = Number(input.value || 0);
+        var progress = ((value - min) / Math.max(max - min, 1)) * 100;
+        input.style.setProperty("--range-progress", progress + "%");
+      }
+
+      function readControls() {
+        debug = controls.debugToggle.checked;
+        showTrails = controls.trailToggle.checked;
+        document.getElementById("vehicleCountValue").textContent = controls.vehicleCount.value;
+        document.getElementById("foodCountValue").textContent = controls.foodCount.value;
+        document.getElementById("predatorCountValue").textContent = controls.predatorCount.value;
+        document.getElementById("simSpeedValue").textContent = controls.simSpeed.value + "x";
+        [controls.vehicleCount, controls.foodCount, controls.predatorCount, controls.simSpeed].forEach(updateRangeFill);
+      }
+
+      function randomPoint(margin) {
+        return createVector(random(margin, width - margin), random(margin, height - margin));
+      }
+
+      function resetEcosystem() {
+        readControls();
+        tick = 0;
+        births = 0;
+        deaths = 0;
+        starvationDeaths = 0;
+        predatorDeaths = 0;
+        populationHistory = [];
+        lastHistoryTick = -Infinity;
+        popu = new Population(Number(controls.vehicleCount.value), Number(controls.foodCount.value), Number(controls.predatorCount.value));
+        recordPopulationHistory(true);
+        updateStats();
+      }
+
+      function addRandomFood(amount) {
+        if (!popu) return;
+        for (var i = 0; i < amount; i++) popu.food.push(randomPoint(25));
+        updateStats();
+      }
+
+      function applyTheme(theme) {
+        document.body.dataset.theme = theme === "dark" ? "dark" : "light";
+        var isDark = document.body.dataset.theme === "dark";
+        controls.themeToggle.textContent = isDark ? "☀" : "☾";
+        controls.themeToggle.title = isDark ? "Enable light mode" : "Enable dark mode";
+        controls.themeToggle.setAttribute("aria-label", controls.themeToggle.title);
+        controls.themeToggle.setAttribute("aria-pressed", String(isDark));
+        localStorage.setItem("life-playground-theme", document.body.dataset.theme);
+        drawPopulationCurve();
+      }
+
+      function toggleTheme() {
+        applyTheme(document.body.dataset.theme === "dark" ? "light" : "dark");
+      }
+
+      function averageHealth() {
+        if (!popu || popu.vehicles.length === 0) return 0;
+        var total = 0;
+        for (var i = 0; i < popu.vehicles.length; i++) total += popu.vehicles[i].health;
+        return total / popu.vehicles.length;
+      }
+
+      function recordPopulationHistory(force) {
+        if (!popu) return;
+        if (!force && tick - lastHistoryTick < 10) return;
+        populationHistory.push({
+          tick: tick,
+          agents: popu.vehicles.length,
+          food: popu.food.length,
+          predators: popu.predators.length,
+        });
+        if (populationHistory.length > 180) populationHistory.shift();
+        lastHistoryTick = tick;
+      }
+
+      function drawPopulationCurve() {
+        var canvas = controls.populationChart;
+        if (!canvas) return;
+        var rect = canvas.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) return;
+        var ratio = window.devicePixelRatio || 1;
+        var targetWidth = Math.max(1, Math.floor(rect.width * ratio));
+        var targetHeight = Math.max(1, Math.floor(rect.height * ratio));
+        if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+        }
+
+        var ctx = canvas.getContext("2d");
+        ctx.save();
+        ctx.scale(ratio, ratio);
+        ctx.clearRect(0, 0, rect.width, rect.height);
+        ctx.fillStyle = cssVar("--field-bg", "#ffffff");
+        ctx.fillRect(0, 0, rect.width, rect.height);
+
+        var padding = 12;
+        var chartWidth = Math.max(1, rect.width - padding * 2);
+        var chartHeight = Math.max(1, rect.height - padding * 2);
+        ctx.strokeStyle = cssVar("--canvas-grid", "#d8dee8");
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.65;
+        for (var lineIndex = 0; lineIndex <= 3; lineIndex++) {
+          var y = padding + (chartHeight * lineIndex) / 3;
+          ctx.beginPath();
+          ctx.moveTo(padding, y);
+          ctx.lineTo(rect.width - padding, y);
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+
+        if (populationHistory.length < 2) {
+          ctx.fillStyle = cssVar("--muted", "#4b5563");
+          ctx.font = "12px Inter, system-ui, sans-serif";
+          ctx.fillText("Collecting population history...", padding, rect.height / 2);
+          ctx.restore();
+          return;
+        }
+
+        var maxValue = 1;
+        for (var i = 0; i < populationHistory.length; i++) {
+          maxValue = Math.max(maxValue, populationHistory[i].agents, populationHistory[i].food, populationHistory[i].predators);
+        }
+
+        function drawSeries(key, color) {
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          for (var i = 0; i < populationHistory.length; i++) {
+            var point = populationHistory[i];
+            var x = padding + (chartWidth * i) / Math.max(1, populationHistory.length - 1);
+            var y = padding + chartHeight - (chartHeight * point[key]) / maxValue;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        }
+
+        drawSeries("agents", cssVar("--canvas-agent", "#e87511"));
+        drawSeries("food", cssVar("--canvas-food", "#27AE60"));
+        drawSeries("predators", cssVar("--canvas-predator", "#1677e8"));
+
+        ctx.fillStyle = cssVar("--muted", "#4b5563");
+        ctx.font = "11px Inter, system-ui, sans-serif";
+        ctx.fillText("max " + maxValue, padding, rect.height - 6);
+        ctx.restore();
+      }
+
+      function updateStats() {
+        if (!popu) return;
+        controls.timeTitle.textContent = "tick " + tick + " · click inside the arena to add an agent";
+        controls.agentMetric.textContent = String(popu.vehicles.length);
+        controls.foodMetric.textContent = String(popu.food.length);
+        controls.predatorMetric.textContent = String(popu.predators.length);
+        controls.healthMetric.textContent = averageHealth().toFixed(0) + "%";
+        controls.birthMetric.textContent = String(births);
+        controls.deathMetric.textContent = String(deaths);
+        controls.starvationMetric.textContent = String(starvationDeaths);
+        controls.predatorDeathMetric.textContent = String(predatorDeaths);
+        drawPopulationCurve();
+      }
+
+      function setup() {
+        var mount = document.getElementById("sceneMount");
+        sceneCanvas = createCanvas(mount.clientWidth, mount.clientHeight);
+        sceneCanvas.parent("sceneMount");
+        angleMode(DEGREES);
+        frameRate(60);
+        resetEcosystem();
+      }
+
+      function windowResized() {
+        var mount = document.getElementById("sceneMount");
+        resizeCanvas(mount.clientWidth, mount.clientHeight);
+        drawPopulationCurve();
+      }
+
+      function drawGrid() {
+        background(cssVar("--canvas-bg", "#ffffff"));
+        stroke(cssVar("--canvas-grid", "#d8dee8"));
+        strokeWeight(1);
+        for (var x = 0; x <= width; x += 48) line(x, 0, x, height);
+        for (var y = 0; y <= height; y += 48) line(0, y, width, y);
+        stroke(cssVar("--canvas-axis", "#8b96a8"));
+        line(0, height - 12, width, height - 12);
+      }
+
+      function draw() {
+        drawGrid();
+        if (!popu) return;
+        var steps = paused ? 0 : Number(controls.simSpeed.value);
+        for (var i = 0; i < steps; i++) {
+          popu.step();
+          tick += 1;
+          recordPopulationHistory(false);
+        }
+        popu.show();
+        updateStats();
+      }
+
+      function mousePressed() {
+        if (!popu || mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height) return;
+        popu.addV(null, mouseX, mouseY);
+      }
+
+      function Population(vehicleCount, foodCount, predatorCount) {
+        this.vehicles = [];
+        this.food = [];
+        this.predators = [];
+
+        for (var i = 0; i < vehicleCount; i++) this.vehicles.push(new Vehicle());
+        for (var j = 0; j < foodCount; j++) this.food.push(randomPoint(25));
+        for (var k = 0; k < predatorCount; k++) this.predators.push(new Predator());
+
+        this.step = function() {
+          for (var i = this.vehicles.length - 1; i >= 0; i--) {
+            var vehicle = this.vehicles[i];
+            vehicle.sides();
+            vehicle.applyForce(vehicle.seek(this.food, vehicle.dna.foodP, vehicle.dna.foodW));
+            vehicle.eat(this.food, 100 - vehicle.health);
+            vehicle.applyForce(vehicle.seek(this.predators, vehicle.dna.predP, vehicle.dna.predW));
+            vehicle.update();
+            vehicle.reproduce();
+            vehicle.die();
+          }
+
+          for (var j = 0; j < this.predators.length; j++) {
+            this.predators[j].update();
+            this.predators[j].wrap();
+          }
+        };
+
+        this.show = function() {
+          for (var i = 0; i < this.food.length; i++) {
+            noStroke();
+            fill(cssVar("--canvas-food", "#27AE60"));
+            ellipse(this.food[i].x, this.food[i].y, 7, 7);
+          }
+
+          for (var j = 0; j < this.predators.length; j++) this.predators[j].show();
+          for (var k = 0; k < this.vehicles.length; k++) this.vehicles[k].show();
+        };
+
+        this.addV = function(dna, x, y) {
+          if (dna) this.vehicles.push(new Vehicle(cloneDna(dna), x, y));
+          else this.vehicles.push(new Vehicle(null, x, y));
+          births += 1;
+        };
+      }
+
+      function cloneDna(dna) {
+        return {
+          foodW: dna.foodW,
+          predW: dna.predW,
+          foodP: dna.foodP,
+          predP: dna.predP,
+          max: dna.max.slice(),
+        };
+      }
+
+      function mutateDna(dna) {
+        var next = cloneDna(dna);
+        var mutationRate = 0.05;
+        if (random(1) < mutationRate) next.foodW = constrain(next.foodW + random(-0.1, 0.1), next.max[0], next.max[1]);
+        if (random(1) < mutationRate) next.predW = constrain(next.predW + random(-0.1, 0.1), next.max[0], next.max[1]);
+        if (random(1) < mutationRate) next.foodP = constrain(next.foodP + random(-10, 10), next.max[2], next.max[3]);
+        if (random(1) < mutationRate) next.predP = constrain(next.predP + random(-10, 10), next.max[2], next.max[3]);
+        return next;
+      }
+
+      function Vehicle(dna, x, y) {
+        this.pos = x != null && y != null ? createVector(x, y) : randomPoint(25);
+        this.vel = createVector(random(-0.3, 0.3), random(-0.3, 0.3));
+        this.vel.setMag(6);
+        this.acc = createVector(0, 0);
+        this.dna = dna || {
+          foodW: random(-2, 2),
+          predW: random(-2, 2),
+          foodP: random(10, 300),
+          predP: random(10, 300),
+          max: [-2, 2, 10, 300],
+        };
+        this.size = 5.7;
+        this.health = 100;
+        this.maxspeed = 6;
+        this.maxforce = 0.8;
+        this.trail = [];
+
+        this.show = function() {
+          if (showTrails && this.trail.length > 1) {
+            noFill();
+            stroke(cssVar("--canvas-agent-soft", "rgba(232, 117, 17, 0.22)"));
+            strokeWeight(1);
+            beginShape();
+            for (var i = 0; i < this.trail.length; i++) vertex(this.trail[i].x, this.trail[i].y);
+            endShape();
+          }
+
+          push();
+          noStroke();
+          fill(cssVar("--canvas-agent", "#e87511"));
+          translate(this.pos.x, this.pos.y);
+          rotate(this.vel.heading() + 90);
+          beginShape();
+          vertex(0, -this.size * 2);
+          vertex(-this.size, this.size * 1.6);
+          vertex(this.size, this.size * 1.6);
+          endShape(CLOSE);
+          pop();
+
+          if (dist(mouseX, mouseY, this.pos.x, this.pos.y) < 100 && debug) {
+            textAlign(CENTER, CENTER);
+            fill(cssVar("--canvas-debug", "rgba(17, 24, 39, 0.62)"));
+            noStroke();
+            text(this.health.toFixed(0) + "%", this.pos.x, this.pos.y - 20);
+
+            fill(cssVar("--canvas-danger", "rgba(235, 87, 87, 0.22)"));
+            rect(this.pos.x, this.pos.y + 20, map(this.dna.predW, -2, 2, -25, 25), 4);
+            fill(cssVar("--canvas-food", "#27AE60"));
+            rect(this.pos.x, this.pos.y + 26, map(this.dna.foodW, -2, 2, -25, 25), 4);
+
+            noFill();
+            stroke(cssVar("--canvas-danger", "rgba(235, 87, 87, 0.22)"));
+            ellipse(this.pos.x, this.pos.y, this.dna.predP * 2, this.dna.predP * 2);
+            stroke(colorToRgba(cssVar("--canvas-food", "#27AE60"), 0.45));
+            ellipse(this.pos.x, this.pos.y, this.dna.foodP * 2, this.dna.foodP * 2);
+          }
+        };
+
+        this.update = function() {
+          this.health -= 0.3;
+          this.vel.add(this.acc);
+          this.vel.limit(this.maxspeed);
+          this.pos.add(this.vel);
+          this.acc.mult(0);
+          if (showTrails && tick % 3 === 0) {
+            this.trail.push(this.pos.copy());
+            if (this.trail.length > 28) this.trail.shift();
+          }
+        };
+
+        this.applyForce = function(force) {
+          this.acc.add(force);
+        };
+
+        this.seek = function(targets, perception, rel) {
+          if (!targets || targets.length === 0) return createVector(0, 0);
+          var record = Infinity;
+          var closest = null;
+          for (var i = targets.length - 1; i >= 0; i--) {
+            var vec = targets[i].pos ? targets[i].pos : targets[i];
+            var d = this.pos.dist(vec);
+            if (d < record && d < perception) {
+              record = d;
+              closest = vec;
+            }
+          }
+          if (closest == null) return createVector(0, 0);
+          var desired = p5.Vector.sub(closest, this.pos);
+          desired.setMag(this.maxspeed);
+          var steer = p5.Vector.sub(desired, this.vel);
+          steer.limit(this.maxforce);
+          if (rel) steer.mult(rel);
+          return steer;
+        };
+
+        this.sides = function() {
+          var d = 25;
+          var desired = null;
+          if (this.pos.x < d) desired = createVector(this.maxspeed, this.vel.y);
+          else if (this.pos.x > width - d) desired = createVector(-this.maxspeed, this.vel.y);
+          if (this.pos.y < d) desired = createVector(this.vel.x, this.maxspeed);
+          else if (this.pos.y > height - d) desired = createVector(this.vel.x, -this.maxspeed);
+          if (desired !== null) {
+            desired.setMag(this.maxspeed);
+            var steer = desired.sub(this.vel);
+            steer.limit(this.maxforce);
+            this.applyForce(steer);
+          }
+        };
+
+        this.eat = function(target, nutrition) {
+          for (var i = target.length - 1; i >= 0; i--) {
+            var d = this.pos.dist(target[i]);
+            if (d < 8) {
+              target.splice(i, 1);
+              this.health = min(150, this.health + nutrition);
+              popu.food.push(randomPoint(25));
+            }
+          }
+        };
+
+        this.die = function() {
+          var starvationHit = this.health <= 0;
+          var predatorHit = false;
+          for (var i = 0; i < popu.predators.length; i++) {
+            if (this.pos.dist(popu.predators[i].pos) < popu.predators[i].size * 0.5) predatorHit = true;
+          }
+          if (starvationHit || predatorHit) {
+            var index = popu.vehicles.indexOf(this);
+            if (index >= 0) {
+              popu.vehicles.splice(index, 1);
+              deaths += 1;
+              if (predatorHit) predatorDeaths += 1;
+              else starvationDeaths += 1;
+            }
+          }
+        };
+
+        this.reproduce = function() {
+          if (random(1) < 0.0005 && popu.vehicles.length < 260) {
+            popu.addV(mutateDna(this.dna), this.pos.x, this.pos.y);
+          }
+        };
+      }
+
+      function Predator() {
+        this.pos = randomPoint(60);
+        this.vel = createVector();
+        this.size = 60;
+        this.xoff = random(10000);
+        this.yoff = random(10000);
+
+        this.show = function() {
+          noStroke();
+          fill(colorToRgba(cssVar("--canvas-predator", "#1677e8"), 0.22));
+          ellipse(this.pos.x, this.pos.y, this.size, this.size);
+          fill(cssVar("--canvas-predator", "#1677e8"));
+          ellipse(this.pos.x, this.pos.y, this.size * 0.28, this.size * 0.28);
+        };
+
+        this.update = function() {
+          this.vel.set(map(noise(this.xoff), 0, 1, -1, 1), map(noise(this.yoff), 0, 1, -1, 1));
+          this.vel.setMag(2);
+          this.pos.add(this.vel);
+          this.xoff += 0.01;
+          this.yoff += 0.01;
+        };
+
+        this.wrap = function() {
+          if (this.pos.x < -this.size) this.pos.x = width + this.size;
+          if (this.pos.x > width + this.size) this.pos.x = -this.size;
+          if (this.pos.y < -this.size) this.pos.y = height + this.size;
+          if (this.pos.y > height + this.size) this.pos.y = -this.size;
+        };
+      }
+
+      ["vehicleCount", "foodCount", "predatorCount", "simSpeed"].forEach(function(id) {
+        controls[id].addEventListener("input", readControls);
+        controls[id].addEventListener("change", function() {
+          if (id !== "simSpeed") resetEcosystem();
+        });
+      });
+      controls.debugToggle.addEventListener("change", readControls);
+      controls.trailToggle.addEventListener("change", readControls);
+      controls.resetButton.addEventListener("click", resetEcosystem);
+      controls.addFoodButton.addEventListener("click", function() { addRandomFood(12); });
+      controls.pauseButton.addEventListener("click", function() {
+        paused = !paused;
+        controls.pauseButton.textContent = paused ? "Resume" : "Pause";
+        controls.pauseButton.setAttribute("aria-pressed", String(paused));
+      });
+      controls.themeToggle.addEventListener("click", toggleTheme);
+
+      readControls();
+      applyTheme(localStorage.getItem("life-playground-theme") || "light");
+    </script>
+  </body>
+</html>
